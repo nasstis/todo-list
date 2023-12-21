@@ -2,8 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:todo_list/constants/constants.dart';
 import 'package:todo_list/models/todo.dart';
-import 'package:todo_list/views/tags_view.dart';
+import 'package:todo_list/widgets/input_widget.dart';
+import 'package:todo_list/widgets/tags_view.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -15,23 +17,10 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
+
   bool isTextEmpty = true;
-  final itemsTest = [];
   final items = [];
-  final List<Color> tileColors = const [
-    Color(0xFFDAFDBB),
-    Color(0xFFF0F424),
-    Color(0xFF9BECFF),
-  ];
   String selectedTag = '';
-  Map<String, IconData> tagIcon = {
-    'home': Icons.home,
-    'work': Icons.work,
-    'study': Icons.book,
-    'sport': Icons.sports_football,
-    'hobby': Icons.pets,
-    'another': Icons.grade,
-  };
 
   @override
   void initState() {
@@ -61,7 +50,7 @@ class _MainPageState extends State<MainPage> {
 
     if (savedItems != null) {
       setState(() {
-        itemsTest.clear();
+        items.clear();
 
         for (String itemString in savedItems) {
           Map<String, dynamic> itemMap = jsonDecode(itemString);
@@ -69,7 +58,7 @@ class _MainPageState extends State<MainPage> {
               title: itemMap['title'],
               description: itemMap['description'],
               tag: itemMap['tag']);
-          itemsTest.add(loadedTodo);
+          items.add(loadedTodo);
         }
       });
     }
@@ -78,7 +67,7 @@ class _MainPageState extends State<MainPage> {
   void _saveItems() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     List<String> todoStrings =
-        itemsTest.map((todo) => jsonEncode(todo.toJson())).toList();
+        items.map((todo) => jsonEncode(todo.toJson())).toList();
     await prefs.setStringList('items', todoStrings);
   }
 
@@ -102,37 +91,15 @@ class _MainPageState extends State<MainPage> {
             Container(
               color: Colors.white,
               child: Column(children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: SizedBox(
-                    height: 40,
-                    child: TextField(
-                      controller: _titleController,
-                      maxLines: null,
-                      expands: true,
-                      decoration: const InputDecoration(
-                        filled: true,
-                        fillColor: Colors.white,
-                        hintText: 'Title',
-                      ),
-                    ),
-                  ),
+                InputField(
+                  controller: _titleController,
+                  height: 40.0,
+                  text: 'Title',
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: SizedBox(
-                    height: 90,
-                    child: TextField(
-                      controller: _descriptionController,
-                      maxLines: null,
-                      expands: true,
-                      decoration: const InputDecoration(
-                        filled: true,
-                        fillColor: Colors.white,
-                        hintText: 'Description',
-                      ),
-                    ),
-                  ),
+                InputField(
+                  controller: _descriptionController,
+                  height: 90.0,
+                  text: 'Description',
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -140,7 +107,7 @@ class _MainPageState extends State<MainPage> {
                     TagSelector(
                       onTagSelected: (tag) {
                         setState(() {
-                          selectedTag = tag; // Отримання вибраного тегу
+                          selectedTag = tag;
                         });
                       },
                     ),
@@ -155,7 +122,7 @@ class _MainPageState extends State<MainPage> {
                                     description: _descriptionController.text,
                                     tag: selectedTag);
                                 setState(() {
-                                  itemsTest.add(newTodo);
+                                  items.add(newTodo);
                                   _titleController.clear();
                                   _descriptionController.clear();
                                   _saveItems();
@@ -187,14 +154,14 @@ class _MainPageState extends State<MainPage> {
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: ListView.builder(
-                  itemCount: itemsTest.length,
+                  itemCount: items.length,
                   itemBuilder: (context, index) {
                     return Dismissible(
-                      key: Key(itemsTest[index].title),
+                      key: Key(items[index].title),
                       direction: DismissDirection.endToStart,
                       onDismissed: (direction) {
                         setState(() {
-                          itemsTest.removeAt(index);
+                          items.removeAt(index);
                           _saveItems();
                         });
                       },
@@ -231,11 +198,11 @@ class _MainPageState extends State<MainPage> {
                         padding: const EdgeInsets.only(bottom: 12.0),
                         child: ListTile(
                           leading: Icon(
-                            tagIcon[itemsTest[index].tag],
+                            tagIcon[items[index].tag],
                             size: 38,
                           ),
                           title: Text(
-                            itemsTest[index].title,
+                            items[index].title,
                             style: const TextStyle(
                               color: Colors.black,
                               fontFamily: 'Montserrat',
@@ -244,7 +211,7 @@ class _MainPageState extends State<MainPage> {
                             ),
                           ),
                           subtitle: Text(
-                            itemsTest[index].description,
+                            items[index].description,
                             style: const TextStyle(
                               color: Colors.black54,
                               fontFamily: 'Montserrat',
