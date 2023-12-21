@@ -1,5 +1,23 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:todo_list/views/tags_view.dart';
+
+class Todo {
+  final String title;
+  final String description;
+  final String tag;
+  Todo({required this.title, required this.description, required this.tag});
+
+  Map<String, dynamic> toJson() {
+    return {
+      'title': title,
+      'description': description,
+      'tag': tag,
+    };
+  }
+}
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -9,48 +27,65 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  final _textController = TextEditingController();
+  final _titleController = TextEditingController();
+  final _descriptionController = TextEditingController();
   bool isTextEmpty = true;
+  final itemsTest = [];
   final items = [];
   final List<Color> tileColors = const [
     Color(0xFFDAFDBB),
     Color(0xFFF0F424),
     Color(0xFF9BECFF),
   ];
+  String selectedTag = '';
 
   @override
   void initState() {
-    _textController.addListener(_updateButtonState);
+    _titleController.addListener(_updateButtonState);
+    _descriptionController.addListener(_updateButtonState);
     _loadItems();
     super.initState();
   }
 
   void _updateButtonState() {
     setState(() {
-      isTextEmpty = _textController.text.isEmpty;
+      isTextEmpty =
+          _titleController.text.isEmpty || _descriptionController.text.isEmpty;
     });
   }
 
   @override
   void dispose() {
-    _textController.dispose();
+    _titleController.dispose();
+    _descriptionController.dispose();
     super.dispose();
   }
 
   void _loadItems() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     List<String>? savedItems = prefs.getStringList('items');
+
     if (savedItems != null) {
       setState(() {
-        items.clear();
-        items.addAll(savedItems);
+        itemsTest.clear();
+
+        for (String itemString in savedItems) {
+          Map<String, dynamic> itemMap = jsonDecode(itemString);
+          Todo loadedTodo = Todo(
+              title: itemMap['title'],
+              description: itemMap['description'],
+              tag: itemMap['tag']);
+          itemsTest.add(loadedTodo);
+        }
       });
     }
   }
 
   void _saveItems() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList('items', items.cast<String>());
+    List<String> todoStrings =
+        itemsTest.map((todo) => jsonEncode(todo.toJson())).toList();
+    await prefs.setStringList('items', todoStrings);
   }
 
   @override
@@ -76,31 +111,59 @@ class _MainPageState extends State<MainPage> {
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: SizedBox(
-                    height: 100,
+                    height: 40,
                     child: TextField(
-                      controller: _textController,
+                      controller: _titleController,
                       maxLines: null,
                       expands: true,
                       decoration: const InputDecoration(
                         filled: true,
                         fillColor: Colors.white,
-                        hintText: 'Start writting your todo...',
+                        hintText: 'Title',
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: SizedBox(
+                    height: 90,
+                    child: TextField(
+                      controller: _descriptionController,
+                      maxLines: null,
+                      expands: true,
+                      decoration: const InputDecoration(
+                        filled: true,
+                        fillColor: Colors.white,
+                        hintText: 'Description',
                       ),
                     ),
                   ),
                 ),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
+                    TagSelector(
+                      onTagSelected: (tag) {
+                        setState(() {
+                          selectedTag = tag; // Отримання вибраного тегу
+                        });
+                      },
+                    ),
                     Padding(
                       padding: const EdgeInsets.only(right: 15.0),
                       child: ElevatedButton(
                         onPressed: isTextEmpty
                             ? null
                             : () {
+                                Todo newTodo = Todo(
+                                    title: _titleController.text,
+                                    description: _descriptionController.text,
+                                    tag: selectedTag);
                                 setState(() {
-                                  items.add(_textController.text);
-                                  _textController.clear();
+                                  itemsTest.add(newTodo);
+                                  _titleController.clear();
+                                  _descriptionController.clear();
                                   _saveItems();
                                 });
                               },
@@ -114,12 +177,15 @@ class _MainPageState extends State<MainPage> {
                     ),
                   ],
                 ),
-                const Text(
-                  'Your todos',
-                  style: TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold),
+                const Padding(
+                  padding: EdgeInsets.only(top: 10.0),
+                  child: Text(
+                    'Your todos',
+                    style: TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontSize: 36,
+                        fontWeight: FontWeight.bold),
+                  ),
                 ),
               ]),
             ),
@@ -127,14 +193,14 @@ class _MainPageState extends State<MainPage> {
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: ListView.builder(
-                  itemCount: items.length,
+                  itemCount: itemsTest.length,
                   itemBuilder: (context, index) {
                     return Dismissible(
-                      key: Key(items[index]),
+                      key: Key(itemsTest[index].title),
                       direction: DismissDirection.endToStart,
                       onDismissed: (direction) {
                         setState(() {
-                          items.removeAt(index);
+                          itemsTest.removeAt(index);
                           _saveItems();
                         });
                       },
@@ -171,14 +237,26 @@ class _MainPageState extends State<MainPage> {
                         padding: const EdgeInsets.only(bottom: 12.0),
                         child: ListTile(
                           title: Text(
-                            items[index],
+                            itemsTest[index].tag,
                             style: const TextStyle(
-                                color: Colors.black,
-                                fontFamily: 'Montserrat',
-                                fontSize: 16),
+                              color: Colors.black,
+                              fontFamily: 'Montserrat',
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          subtitle: Text(
+                            itemsTest[index]
+                                .description, // Додайте відображення опису тут
+                            style: const TextStyle(
+                              color: Colors.black54,
+                              fontFamily: 'Montserrat',
+                              fontSize: 14,
+                            ),
                           ),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20.0)),
+                            borderRadius: BorderRadius.circular(20.0),
+                          ),
                           tileColor: tileColors[index % tileColors.length],
                         ),
                       ),
