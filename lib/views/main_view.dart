@@ -72,17 +72,16 @@ class _MainPageState extends State<MainPage> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: FloatingActionButton(
+                  padding: const EdgeInsets.only(right: 15.0),
+                  child: ElevatedButton(
                     onPressed: isTextEmpty
                         ? null
                         : () {
                             items.add(_textController.text);
                             _textController.clear();
                           },
-                    backgroundColor: isTextEmpty
-                        ? const Color(0xFFCECECE)
-                        : const Color(0xFFF0F424),
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFF0F424)),
                     child: const Icon(
                       Icons.add,
                       color: Colors.black54,
@@ -91,9 +90,16 @@ class _MainPageState extends State<MainPage> {
                 ),
               ],
             ),
+            const Text(
+              'Your todos',
+              style: TextStyle(
+                  fontFamily: 'Montserrat',
+                  fontSize: 36,
+                  fontWeight: FontWeight.bold),
+            ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: const EdgeInsets.all(12.0),
                 child: ListView.builder(
                   itemCount: items.length,
                   itemBuilder: (context, index) {
@@ -106,7 +112,7 @@ class _MainPageState extends State<MainPage> {
                         });
                       },
                       background: Padding(
-                        padding: const EdgeInsets.only(bottom: 10.0),
+                        padding: const EdgeInsets.only(bottom: 12.0),
                         child: Container(
                           decoration: BoxDecoration(
                               color: Colors.red,
@@ -135,7 +141,7 @@ class _MainPageState extends State<MainPage> {
                         ),
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.only(bottom: 10.0),
+                        padding: const EdgeInsets.only(bottom: 12.0),
                         child: ListTile(
                           title: Text(
                             items[index],
