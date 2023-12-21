@@ -2,22 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:todo_list/models/todo.dart';
 import 'package:todo_list/views/tags_view.dart';
-
-class Todo {
-  final String title;
-  final String description;
-  final String tag;
-  Todo({required this.title, required this.description, required this.tag});
-
-  Map<String, dynamic> toJson() {
-    return {
-      'title': title,
-      'description': description,
-      'tag': tag,
-    };
-  }
-}
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -38,6 +24,14 @@ class _MainPageState extends State<MainPage> {
     Color(0xFF9BECFF),
   ];
   String selectedTag = '';
+  Map<String, IconData> tagIcon = {
+    'home': Icons.home,
+    'work': Icons.work,
+    'study': Icons.book,
+    'sport': Icons.sports_football,
+    'hobby': Icons.pets,
+    'another': Icons.grade,
+  };
 
   @override
   void initState() {
@@ -153,7 +147,7 @@ class _MainPageState extends State<MainPage> {
                     Padding(
                       padding: const EdgeInsets.only(right: 15.0),
                       child: ElevatedButton(
-                        onPressed: isTextEmpty
+                        onPressed: isTextEmpty || selectedTag == ''
                             ? null
                             : () {
                                 Todo newTodo = Todo(
@@ -178,7 +172,7 @@ class _MainPageState extends State<MainPage> {
                   ],
                 ),
                 const Padding(
-                  padding: EdgeInsets.only(top: 10.0),
+                  padding: EdgeInsets.only(top: 15.0),
                   child: Text(
                     'Your todos',
                     style: TextStyle(
@@ -236,8 +230,12 @@ class _MainPageState extends State<MainPage> {
                       child: Padding(
                         padding: const EdgeInsets.only(bottom: 12.0),
                         child: ListTile(
+                          leading: Icon(
+                            tagIcon[itemsTest[index].tag],
+                            size: 38,
+                          ),
                           title: Text(
-                            itemsTest[index].tag,
+                            itemsTest[index].title,
                             style: const TextStyle(
                               color: Colors.black,
                               fontFamily: 'Montserrat',
@@ -246,8 +244,7 @@ class _MainPageState extends State<MainPage> {
                             ),
                           ),
                           subtitle: Text(
-                            itemsTest[index]
-                                .description, // Додайте відображення опису тут
+                            itemsTest[index].description,
                             style: const TextStyle(
                               color: Colors.black54,
                               fontFamily: 'Montserrat',
