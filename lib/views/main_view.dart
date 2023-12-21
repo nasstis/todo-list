@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -20,6 +21,7 @@ class _MainPageState extends State<MainPage> {
   @override
   void initState() {
     _textController.addListener(_updateButtonState);
+    _loadItems();
     super.initState();
   }
 
@@ -33,6 +35,22 @@ class _MainPageState extends State<MainPage> {
   void dispose() {
     _textController.dispose();
     super.dispose();
+  }
+
+  void _loadItems() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String>? savedItems = prefs.getStringList('items');
+    if (savedItems != null) {
+      setState(() {
+        items.clear();
+        items.addAll(savedItems);
+      });
+    }
+  }
+
+  void _saveItems() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('items', items.cast<String>());
   }
 
   @override
@@ -80,8 +98,11 @@ class _MainPageState extends State<MainPage> {
                         onPressed: isTextEmpty
                             ? null
                             : () {
-                                items.add(_textController.text);
-                                _textController.clear();
+                                setState(() {
+                                  items.add(_textController.text);
+                                  _textController.clear();
+                                  _saveItems();
+                                });
                               },
                         style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFFF0F424)),
@@ -114,6 +135,7 @@ class _MainPageState extends State<MainPage> {
                       onDismissed: (direction) {
                         setState(() {
                           items.removeAt(index);
+                          _saveItems();
                         });
                       },
                       background: Padding(
