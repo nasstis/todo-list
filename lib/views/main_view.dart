@@ -11,6 +11,11 @@ class _MainPageState extends State<MainPage> {
   final _textController = TextEditingController();
   bool isTextEmpty = true;
   final items = [];
+  final List<Color> tileColors = const [
+    Color(0xFFDAFDBB),
+    Color(0xFFF0F424),
+    Color(0xFF9BECFF),
+  ];
 
   @override
   void initState() {
@@ -33,7 +38,7 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: const Color(0xffe8e8e8),
+        backgroundColor: const Color(0xffd9d9d9),
         appBar: AppBar(
           backgroundColor: const Color(0xfff0f424),
           title: const Text(
@@ -87,46 +92,66 @@ class _MainPageState extends State<MainPage> {
               ],
             ),
             Expanded(
-              child: ListView.builder(
-                itemCount: items.length,
-                itemBuilder: (context, index) {
-                  return Dismissible(
-                    key: Key(items[index]),
-                    direction: DismissDirection.endToStart,
-                    onDismissed: (direction) {
-                      setState(() {
-                        items.removeAt(index);
-                      });
-                    },
-                    background: Container(
-                      color: Colors.red,
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 15.0),
-                            child: Text(
-                              'Delete todo',
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontFamily: 'Montserrat',
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16),
-                            ),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ListView.builder(
+                  itemCount: items.length,
+                  itemBuilder: (context, index) {
+                    return Dismissible(
+                      key: Key(items[index]),
+                      direction: DismissDirection.endToStart,
+                      onDismissed: (direction) {
+                        setState(() {
+                          items.removeAt(index);
+                        });
+                      },
+                      background: Padding(
+                        padding: const EdgeInsets.only(bottom: 10.0),
+                        child: Container(
+                          decoration: BoxDecoration(
+                              color: Colors.red,
+                              borderRadius: BorderRadius.circular(20.0)),
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 15.0),
+                                child: Text(
+                                  'Delete todo',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontFamily: 'Montserrat',
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16),
+                                ),
+                              ),
+                              Icon(
+                                Icons.delete,
+                                color: Colors.white,
+                              ),
+                            ],
                           ),
-                          Icon(
-                            Icons.delete,
-                            color: Colors.white,
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
-                    child: ListTile(
-                      title: Text(items[index]),
-                    ),
-                  );
-                },
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 10.0),
+                        child: ListTile(
+                          title: Text(
+                            items[index],
+                            style: const TextStyle(
+                                color: Colors.black,
+                                fontFamily: 'Montserrat',
+                                fontSize: 16),
+                          ),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20.0)),
+                          tileColor: tileColors[index % tileColors.length],
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
           ],
