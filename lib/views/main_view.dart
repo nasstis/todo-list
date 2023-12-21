@@ -93,13 +93,34 @@ class _MainPageState extends State<MainPage> {
                   return Dismissible(
                     key: Key(items[index]),
                     direction: DismissDirection.endToStart,
-                    onDismissed: (DismissDirection direction) {
+                    onDismissed: (direction) {
                       setState(() {
                         items.removeAt(index);
                       });
                     },
                     background: Container(
                       color: Colors.red,
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 15.0),
+                            child: Text(
+                              'Delete todo',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontFamily: 'Montserrat',
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16),
+                            ),
+                          ),
+                          Icon(
+                            Icons.delete,
+                            color: Colors.white,
+                          ),
+                        ],
+                      ),
                     ),
                     child: ListTile(
                       title: Text(items[index]),
